@@ -106,7 +106,7 @@ export default class PageDetailMoto extends React.Component{
                   <RkText rkType='header4 hintColor' style = {{paddingBottom: 5}}>Info</RkText>
                   <Progress.Bar progress={dataEntretiens.length < dataList.length ? 0 : dataList[id].NbKilometres/dataEntretiens[id].NbKilometres} width={200} height = {15} />
               </View>
-              <View> 
+              <View style = {{flexDirection : row, paddingTop : 10}}> 
                   <RkButton rkType = "rouded"></RkButton>
                   <RkButton rkType = "rouded"></RkButton>
               </View>
