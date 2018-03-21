@@ -27,6 +27,7 @@
     "react-native-fetch-blob": "^0.10.8",
     "react-native-keyboard-aware-scroll-view": "^0.4.4",
     "react-native-progress": "^3.4.0",
+    "react-native-swipeout": "^2.3.3",
     "react-native-ui-kitten": "^3.0.0",
     "react-navigation": "^1.5.7"
   }

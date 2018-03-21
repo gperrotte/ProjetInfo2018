@@ -21,6 +21,7 @@ import {
     RkTextInput
   } from 'react-native-ui-kitten';
 import {ImagePicker} from 'expo';
+import Swipeout from 'react-native-swipeout';
 
 import * as firebase from 'firebase';
 import { database } from 'firebase';
@@ -53,6 +54,7 @@ export default class PageMoto extends React.Component{
         }
         this.renderItem = this._renderItem.bind(this)
         this.renderAddMotoForm = this.renderAddMotoForm.bind(this)
+
     }
 
 
@@ -167,34 +169,48 @@ pickImage = async () => {
     }
     }
     
+    removeMoto = (info) => {
+        const motoRef = firebase.database().ref().child('Motos')
+        motoRef.child(info.item.id).remove();
+        this._onRefresh()
+    }
     
 
 _renderItem(info) {
     const imgSource = require('../img/addImage.png')
     const renderImageProfile = this.renderImageProfile();
+    let swipeBtns = [{
+        text: 'Supprimer',
+        backgroundColor: 'red',
+        onPress: () => this.removeMoto(info)
+      }];
     //const {image} = this.state
     return (
-        <TouchableOpacity
-          delayPressIn={70}
-          activeOpacity={0.8}
-          onPress={() => this.props.navigation.navigate('DetailMoto', {
-              id: info.item.id,
-              marque: info.item.Marque,
-              modele : info.item.Modele})}
-          >
-            <RkCard rkType='horizontal' style={styles.card}>
-            {renderImageProfile}
-  
-            <View rkCardContent>
-              <RkText numberOfLines={1} rkType='header6'>{info.item.Marque + ' ' +info.item.Modele}</RkText>
-              <RkText rkType='secondary6 hintColor'>{`${info.item.Modele} ${info.item.Modele}`}</RkText>
-              <RkText style={styles.post} numberOfLines={2} rkType='secondary1'>{info.item.Modele}</RkText>
-            </View>
-            <View rkCardFooter>
-              <SocialBar rkType='space' showLabel={true}/>
-            </View >
+        <Swipeout right = {swipeBtns}
+         style={styles.card}
+         autoClose = {true}
+         buttonWidth = {110}>
+            <TouchableOpacity
+            delayPressIn={70}
+            activeOpacity={0.8}
+            onPress={() => this.props.navigation.navigate('DetailMoto', {
+                id: info.item.id,
+                marque: info.item.Marque,
+                modele : info.item.Modele})}
+            >
+            <RkCard rkType='horizontal' >
+                {renderImageProfile}
+                <View rkCardContent>
+                            <RkText numberOfLines={1} rkType='header6'>{info.item.Marque + ' ' +info.item.Modele}</RkText>
+                            <RkText rkType='secondary6 hintColor'>{`${info.item.Modele} ${info.item.Modele}`}</RkText>
+                            <RkText style={styles.post} numberOfLines={2} rkType='secondary1'>Ajoutée le {info.item.DateAjout}</RkText>
+                </View>
+                <View rkCardFooter>
+                    <SocialBar rkType='space' showLabel={true}/>
+                </View >
           </RkCard>
         </TouchableOpacity>
+        </Swipeout>
       )
     }
 
@@ -205,30 +221,28 @@ _renderItem(info) {
 
 
     getMoto = () => { 
-        let data = []
+        let data = [];
+        let numberOfMoto = this.state;
         const motoRef = firebase.database().ref().child('Motos')
-        motoRef.on('child_added', snapshot => {
+        motoRef.on('value', snapshot => {
+            if(snapshot.numChildren() > 0)
+            {
+            snapshot.forEach(childSnapshot => {
             data.push({
-                'id' : snapshot.key, 
-                'Marque' : snapshot.val().Marque,
-                'Modele' : snapshot.val().Modele,
+                'id' : childSnapshot.key, 
+                'Marque' : childSnapshot.val().Marque,
+                'Modele' : childSnapshot.val().Modele,
+                'DateAjout' : childSnapshot.val().DateAjout,
 
             })
-            this.setState({dataList:data})
+                this.setState({dataList:data})
+            })
+            }
+            else
+            {
+                this.setState({dataList:[]})
+            }
         })
-    }
-
-    updateMoto = (marque, modele, user) => {
-        const key = '-L5md9uJ89ZIMNfDg7IG';
-        let postData = {
-            Modele : modele,
-            Marque : marque,
-            User : user,
-        }
-
-        let updates = {};
-        updates['Motos/' + key] = postData;
-        firebase.database().ref().update(updates)
     }
 
     renderAddMotoForm = () => {
@@ -275,6 +289,19 @@ _renderItem(info) {
 
 render() {
     const renderAddMotoForm = this.renderAddMotoForm();
+    if(this.state.dataList[0] == 'undefined')
+    {
+    return(
+    <ScrollView 
+      refreshControl={
+        <RefreshControl
+          refreshing={this.state.refreshing}
+          onRefresh={this._onRefresh.bind(this)}/>}>
+          {renderAddMotoForm}
+      </ScrollView>)
+    }
+    else
+    {
     return (
       <ScrollView 
       refreshControl={
@@ -289,6 +316,7 @@ render() {
           {renderAddMotoForm}
       </ScrollView>
     )
+}
   }
 }
 
@@ -305,59 +333,3 @@ let styles = RkStyleSheet.create(theme => ({
       marginTop: 13
     }
   }));
-
-
-/*class RenderMoto extends React.Component {
-        render(){
-            return(
-                <View>
-                    <View style={{flex: 1, flexDirection : 'row'}}>
-                        <Text> {this.props.marque} </Text>
-                    </View>
-
-                </View>
-            )
-        }
-}
-
-
-    renderAddMotoForm = () => {
-        if(this.state.status)
-        {
-        return(
-            <View>
-                <View style={{flex: 1, flexDirection : 'row'}}>
-                <FormLabel>Marque</FormLabel>
-                <FormInput placeholder = 'Honda' onChangeText = {(text) => this.setState({marque: text})}/>
-                    </View>
-            <View style={{flex: 1, flexDirection : 'row'}}>
-                <FormLabel>Modele</FormLabel>
-                <FormInput placeholder = 'CB500'onChangeText = {(text) => this.setState({modele: text})}/>
-            </View>
-            <Button title ="Sauvegarder" 
-                    style = {{ marginTop : "5%"}} 
-                    onPress = {this.addMoto.bind(this,this.state.marque, this.state.modele)}/>
-            </View>
-        )}
-        else return null
-    }
-
-    render(){
-        
-        return(
-            <View>
-                <ScrollView>
-                    <TouchableOpacity onPress = {() => this.setState({status: !this.state.status})}>
-                        <View style={{flex: 1, flexDirection : 'row'}}>
-                            <FormLabel style = {{marginRight: '70%' }}> + Ajouter une moto ! </FormLabel>
-                        </View>
-                            {this.state.status ? this.renderAddMotoForm() : null}
-                        </TouchableOpacity> 
-                        <View>
-                            <Button onPress = {this.updateMoto.bind(this, 'Suzuki', 'GSXR', 'blabla@example.fr')}/>
-                        </View>              
-                </ScrollView>         
-            </View>
-        )
-    }
-}*/
