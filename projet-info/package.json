@@ -19,16 +19,17 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "create-react-native-app": "^1.0.0",
     "expo": "^25.0.0",
-    "firebase": "^4.11.0",
+    "firebase": "^4.12.0",
     "react": "16.2.0",
     "react-native": "0.52.0",
     "react-native-elements": "^0.19.0",
     "react-native-fetch-blob": "^0.10.8",
-    "react-native-keyboard-aware-scroll-view": "^0.4.4",
+    "react-native-keyboard-aware-scroll-view": "^0.5.0",
     "react-native-progress": "^3.4.0",
     "react-native-swipeout": "^2.3.3",
     "react-native-ui-kitten": "^3.0.0",
-    "react-navigation": "^1.5.7"
+    "react-navigation": "^1.5.8"
   }
 }

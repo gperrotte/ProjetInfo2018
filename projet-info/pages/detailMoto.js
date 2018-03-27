@@ -1,4 +1,4 @@
-import React from 'react';
+import  React from 'react';
 import { Text, View, ProgressBar, ProgressViewIOS, TouchableOpacity, ScrollView, FlatList, RefreshControl } from 'react-native';
 import {Button , FormInput, FormLabel, FormValidationMessage, Icon} from 'react-native-elements';
 import { Dimensions } from 'react-native';
@@ -11,7 +11,8 @@ import {
     RkTheme,
     RkButton,
   } from 'react-native-ui-kitten';
-  import {SocialBar} from '../components/socialBar'
+  import   {SocialBar} from '../components/socialBar'
+  import { RkTextInput } from 'react-native-ui-kitten/src/components/textinput/rkTextInput';
   
 export default class PageDetailMoto extends React.Component{
     constructor(props){
@@ -76,6 +77,30 @@ export default class PageDetailMoto extends React.Component{
         })
     }
 
+
+    setNbKilometresAllMoto = (nbKilometres) => {
+      const { params } = this.props.navigation.state;
+      const id = params ? params.id : null; 
+      const motoRef = firebase.database().ref().child('Motos').child(id).child('Entretiens')
+      let postData = [];
+      motoRef.on('value', snapshot => {
+          snapshot.forEach(childSnapshot => {
+              postData.push({
+                  'DateModif' : new Date().toDateString(),
+                  'Name' : childSnapshot.val().Name,
+                  'NbKilometres' : nbKilometres,
+              })
+          })
+        let updates = {};
+        updates['Motos/' + id + '/Entretiens/'] = postData;
+        firebase.database().ref().update(updates)
+      })
+
+
+    }
+
+
+
     remiseAZeroEntretien = (info) => {
       const entretienID = info.item.id;
       const { params } = this.props.navigation.state;
@@ -104,6 +129,10 @@ export default class PageDetailMoto extends React.Component{
           return null
         }
         else {
+          let color = 'rgba(44, 226, 3, 1)'
+          if(dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 0.5) color = 'rgba(44, 226, 3, 1)'
+          else if (dataList[id].NbKilometres/dataEntretiens[id].NbKilometres > 0.8) color = 'rgba(226, 3, 3, 1)'
+          else color ='rgba(237, 114, 12, 1)'
           if(statut[id])
           {
           return (
@@ -114,8 +143,9 @@ export default class PageDetailMoto extends React.Component{
                         onPress = {() => {statutBis[id] = false; this.setState({statut : statutBis})}}>
                           <View  style = {[styles.section, {paddingTop : 20}]}>
                       <RkText rkType='header4 hintColor' style = {{paddingBottom: 5}}>{info.item.Name}</RkText>
-                      <Progress.Bar progress={ dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 1 ? 
-                                                dataList[id].NbKilometres/dataEntretiens[id].NbKilometres : 1} width={200} height = {15} />
+                      <Progress.Bar color = {color} 
+                      progress={ dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 1 ? 
+                      dataList[id].NbKilometres/dataEntretiens[id].NbKilometres : 1} width={200} height = {15} />
                   </View>
                 </TouchableOpacity>
               )
@@ -129,7 +159,8 @@ export default class PageDetailMoto extends React.Component{
                         onPress = {() => {statutBis[id] = true; this.setState({statut : statutBis})}}>
                     <View  style = {[styles.section, {paddingTop : 20}]}>
                       <RkText rkType='header4 hintColor' style = {{paddingBottom: 5}}>{info.item.Name}</RkText>
-                      <Progress.Bar progress={dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 1 ? 
+                      <Progress.Bar color = {color}
+                                  progress={dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 1 ? 
                                                 dataList[id].NbKilometres/dataEntretiens[id].NbKilometres : 1} width={200} height = {15} />
                       <View style = {{paddingTop : 10}}> 
                         <RkText rkType = 'secondary1 hintColor'>Nombre de kilomètres : {dataList[id].NbKilometres} / {dataEntretiens[id].NbKilometres}</RkText>
@@ -144,7 +175,7 @@ export default class PageDetailMoto extends React.Component{
                 </TouchableOpacity>
             )
           }
-      }
+        }
       }
         
 
@@ -171,6 +202,10 @@ export default class PageDetailMoto extends React.Component{
                     keyExtractor={this._keyExtractor}
                     //style={styles.container}
                     />
+                    <View style = {{flexDirection : 'row', paddingTop: 25, alignItems: 'center', justifyContent :'center'}}>
+                        <RkButton  style = {{width : 200, height : 50}}
+                        onPress = {() => this.setNbKilometresAllMoto(300)}> Mettre à jours les kilomètres</RkButton>
+                    </View>
                   </View>
                   <View rkCardFooter>
                   </View>
@@ -178,7 +213,6 @@ export default class PageDetailMoto extends React.Component{
               </ScrollView>
             )
           }
-
           
             _onRefresh() {
               this.setState({refreshing: true});
@@ -235,19 +269,19 @@ let styles = RkStyleSheet.create(theme => ({
 }));
 
 
-/*import React from 'react';
-import {
+/* React from 'react';
+ {
   View,
   ScrollView,
 } from 'react-native';
-import {
+ {
   RkText,
   RkButton, RkStyleSheet
 } from 'react-native-ui-kitten';
-import {Avatar} from '../../components/avatar';
-import {Gallery} from '../../components/gallery';
-import {data} from '../../data/';
-import formatNumber from '../../utils/textUtils';
+ {Avatar} from '../../components/avatar';
+ {Gallery} from '../../components/gallery';
+ {data} from '../../data/';
+ formatNumber from '../../utils/textUtils';
 
 export class ProfileV1 extends React.Component {
   static navigationOptions = {
