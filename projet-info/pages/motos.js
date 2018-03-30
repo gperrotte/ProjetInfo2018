@@ -26,14 +26,15 @@ import Swipeout from 'react-native-swipeout';
 import * as firebase from 'firebase';
 import { database } from 'firebase';
 import {SocialBar} from '../components/socialBar'
-///import RNFetchBlob from 'react-native-fetch-blob'
 
 
+
+import RNFetchBlob from 'react-native-fetch-blob'
 // Prepare Blob support
-/*const Blob = RNFetchBlob.polyfill.Blob
+const Blob = RNFetchBlob.polyfill.Blob
 const fs = RNFetchBlob.fs
 window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
-window.Blob = Blob*/
+window.Blob = Blob
 
 export default class PageMoto extends React.Component{
     static navigationOptions = {
@@ -54,7 +55,11 @@ export default class PageMoto extends React.Component{
         }
         this.renderItem = this._renderItem.bind(this)
         this.renderAddMotoForm = this.renderAddMotoForm.bind(this)
+    }
 
+    componentWillMount()
+    {
+        this.getMoto()
     }
 
 
@@ -214,10 +219,7 @@ _renderItem(info) {
       )
     }
 
-    componentWillMount()
-    {
-        this.getMoto()
-    }
+
 
 
     getMoto = () => { 
