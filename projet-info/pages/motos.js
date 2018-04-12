@@ -9,7 +9,9 @@ import { Text,
     ListView, 
     FlatList,
     Image,
-    RefreshControl
+    RefreshControl,
+    Alert,
+    ActivityIndicator
 } from 'react-native';
 import {Button , FormInput, FormLabel, FormValidationMessage, Icon} from 'react-native-elements';
 import {
@@ -22,19 +24,12 @@ import {
   } from 'react-native-ui-kitten';
 import {ImagePicker} from 'expo';
 import Swipeout from 'react-native-swipeout';
-
 import * as firebase from 'firebase';
 import { database } from 'firebase';
-import {SocialBar} from '../components/socialBar'
+import {SocialBar} from '../components/socialBar';
+import TimerMixin from 'react-timer-mixin';
 
 
-
-import RNFetchBlob from 'react-native-fetch-blob'
-// Prepare Blob support
-const Blob = RNFetchBlob.polyfill.Blob
-const fs = RNFetchBlob.fs
-window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
-window.Blob = Blob
 
 export default class PageMoto extends React.Component{
     static navigationOptions = {
@@ -47,54 +42,32 @@ export default class PageMoto extends React.Component{
             status: false,
             marque: '',
             modele: '',
-            rootRef: firebase.database().ref(),
-            motoRef: firebase.database().ref().child('Motos'),
             dataList : [],
             image :'',
             refreshing: false,
+            timer : 0,
+            loading : false,
         }
         this.renderItem = this._renderItem.bind(this)
         this.renderAddMotoForm = this.renderAddMotoForm.bind(this)
+        this.keyExtractor = this._keyExtractor.bind(this)
     }
 
     componentWillMount()
     {
-        this.getMoto()
+        this.setState({loading: true})
+        if(firebase.auth().currentUser)
+        { 
+            this.getMoto()
+        }
+        let timer = setTimeout(() => this.setState({loading: false}), 1500)
+
     }
-
-
-   /* uploadImage(uri, mime = 'image/jpeg') {
-        return new Promise((resolve, reject) => {
-          const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri
-          let uploadBlob = null
     
-          const imageRef = FirebaseClient.storage().child('images')
-    
-          fs.readFile(uploadUri, 'base64')
-            .then((data) => {
-              return Blob.build(data, { type: `${mime};BASE64` })
-            })
-            .then((blob) => {
-              uploadBlob = blob
-              return imageRef.put(blob, { contentType: mime })
-            })
-            .then(() => {
-              uploadBlob.close()
-              return imageRef.getDownloadURL()
-            })
-            .then((url) => {
-              resolve(url)
-            })
-            .catch((error) => {
-              reject(error)
-          })
-        })
-      }*/
-
-
-
-
-
+    componentDidMount()
+    {
+        clearInterval(this.state.timer);
+    }
 
     _onRefresh() {
         this.setState({refreshing: true});
@@ -106,12 +79,12 @@ export default class PageMoto extends React.Component{
     addMoto = (marque, modele) => { 
         const user = firebase.auth().currentUser
         const userEmail = user.email
-
-        this.state.motoRef.push({
+        const userUid = user.uid
+        const ref = firebase.database().ref().child('users').child(userUid).child('Motos')
+        ref.push({
             Marque : marque.toString(),
             Modele : modele.toString(),
-            User : userEmail.toString(),
-            image : '',
+            Uri : 'undefined',
             DateAjout : new Date().toDateString(),
             Entretiens: {
                 0 : {
@@ -129,67 +102,63 @@ export default class PageMoto extends React.Component{
                     NbKilometres : 0,
                     DateModif : new Date().toDateString(),
                 },
-            }
+        }
         })
         this.setState({status: false})
         this._onRefresh();
-
-    }
-_keyExtractor(post) {
-    return post.id;
     }
 
-pickImage = async () => {
-    //selection d'une image dans la galerie 
-    let result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 4],
-    });
+    _keyExtractor(post) {
+        return post.id;
+        }
 
-    
-    if (!result.cancelled) {
-        //this.uploadImage(response.uri)
-        //.then(url => { alert('uploaded'); this.setState({image_uri: url}) })
-        //.catch(error => console.log(error))
-        this.saveItem("imageProfile", this.state.image)
-    }
 
-    };
-
-    renderImageProfile = () => {
-    if(this.state.image !== ''){
-        let {image} = this.state
-        return(
-        <TouchableHighlight onPress={this.pickImage}>
-            <Image source={{ uri: image }} style={{ width: 100, height: 100, borderRadius:0 }} />
-        </TouchableHighlight>
-        );
-    }
-    else{
-        const sourceImage = require('../img/addImage.png')
-        return(
-        <TouchableHighlight onPress={this.pickImage}>
-            <Image source={sourceImage} style={{ width: 100, height: 100, borderRadius:0 }} />
-        </TouchableHighlight>)
-    }
-    }
     
     removeMoto = (info) => {
-        const motoRef = firebase.database().ref().child('Motos')
-        motoRef.child(info.item.id).remove();
-        this._onRefresh()
+        const user = firebase.auth().currentUser
+        const userUid = user.uid
+        const ref = firebase.database().ref().child('users').child(userUid).child('Motos')
+        ref.child(info.item.id).remove();
+        this._onRefresh();
     }
     
+    pickImage = async (info) => {
+        //selection d'une image dans la galerie 
+        let result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            aspect: [4, 4],
+        });
+        
+        if (!result.cancelled) {
+           this.updateUri(info, result.uri)
+        }
+    };
+
+    updateUri = (info, uri) => {
+         const user = firebase.auth().currentUser
+        const userUid = user.uid
+        const ref = firebase.database().ref().child('users').child(userUid).child('Motos').child(info.item.id)
+        let postData = uri;
+          let updates = {};
+          updates['users/'+ userUid + '/Motos/' + info.item.id + '/Uri/'] = postData;
+          firebase.database().ref().update(updates)
+          this.getMoto()
+    }
 
 _renderItem(info) {
     const imgSource = require('../img/addImage.png')
-    const renderImageProfile = this.renderImageProfile();
     let swipeBtns = [{
         text: 'Supprimer',
         backgroundColor: 'red',
-        onPress: () => this.removeMoto(info)
+        onPress: () =>  Alert.alert(
+            'Supprimer le véhicule',
+            '',
+            [
+              {text: 'Non, ne pas supprimer', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+              {text: 'Oui', onPress: () => this.removeMoto(info)},
+            ]
+          )
       }];
-    //const {image} = this.state
     return (
         <Swipeout right = {swipeBtns}
          style={styles.card}
@@ -201,14 +170,15 @@ _renderItem(info) {
             onPress={() => this.props.navigation.navigate('DetailMoto', {
                 id: info.item.id,
                 marque: info.item.Marque,
-                modele : info.item.Modele})}
+                modele : info.item.Modele,
+                uri : info.item.Uri})}
             >
             <RkCard rkType='horizontal' >
-                {renderImageProfile}
+                <ImageMoto info = {info} uri = {info.item.Uri} changeImage = {() => this.pickImage(info)}/>
                 <View rkCardContent>
-                            <RkText numberOfLines={1} rkType='header6'>{info.item.Marque + ' ' +info.item.Modele}</RkText>
-                            <RkText rkType='secondary6 hintColor'>{`${info.item.Modele} ${info.item.Modele}`}</RkText>
-                            <RkText style={styles.post} numberOfLines={2} rkType='secondary1'>Ajoutée le {info.item.DateAjout}</RkText>
+                            <RkText numberOfLines={1} rkType='header6'>{info.item.Marque}</RkText>
+                            <RkText rkType='secondary1 hintColor'>{info.item.Modele}</RkText>
+                            <RkText style={styles.post} numberOfLines={2} rkType='secondary1'>Ajouté le {info.item.DateAjout}</RkText>
                 </View>
                 <View rkCardFooter>
                     <SocialBar rkType='space' showLabel={true}/>
@@ -222,23 +192,25 @@ _renderItem(info) {
 
 
 
-    getMoto = () => { 
+    getMoto = () => {
+        this.setState({dataList: []})
         let data = [];
         let numberOfMoto = this.state;
-        const motoRef = firebase.database().ref().child('Motos')
-        motoRef.on('value', snapshot => {
+        const user = firebase.auth().currentUser
+        const userUid = user.uid
+        const ref = firebase.database().ref().child('users').child(userUid).child('Motos')
+        ref.on('child_added', snapshot => {
             if(snapshot.numChildren() > 0)
             {
-            snapshot.forEach(childSnapshot => {
-            data.push({
-                'id' : childSnapshot.key, 
-                'Marque' : childSnapshot.val().Marque,
-                'Modele' : childSnapshot.val().Modele,
-                'DateAjout' : childSnapshot.val().DateAjout,
+                data.push({
+                    'id' : snapshot.key, 
+                    'Marque' : snapshot.val().Marque,
+                    'Modele' : snapshot.val().Modele,
+                    'DateAjout' : snapshot.val().DateAjout,
+                    'Uri' : snapshot.val().Uri
 
-            })
+                })
                 this.setState({dataList:data})
-            })
             }
             else
             {
@@ -247,6 +219,8 @@ _renderItem(info) {
         })
     }
 
+
+
     renderAddMotoForm = () => {
         if(this.state.status)
         {
@@ -254,7 +228,7 @@ _renderItem(info) {
             <TouchableOpacity
                     delayPressIn={70}
                     activeOpacity={0.8}
-                    style = {styles.container}
+                    style = {[styles.container, styles.root]}
                     onPress = {()=> this.setState({status: !this.state.status})}>
                   <RkCard rkType='horizontal-ajout' style={styles.card}>
                       <View rkCardContent>
@@ -265,17 +239,19 @@ _renderItem(info) {
                           onChangeText = {(text) => this.setState({marque: text})}/>
                           <RkTextInput rkType ='basic' label='Modele'
                           onChangeText = {(text) => this.setState({modele: text})}/>
-                          <RkButton rkType = 'rounded save' onPress = {this.addMoto.bind(this,this.state.marque, this.state.modele)} >Sauvegarder</RkButton>
+                          <RkButton rkType = 'rounded save' onPress = {() => {this.addMoto(this.state.marque, this.state.modele);
+                             this.setState({marque:  '', modele: ''}) }}>Sauvegarder</RkButton>
                       </View>
                 </RkCard>
               </TouchableOpacity>
+
         )}
         else {
             return(
                 <TouchableOpacity
                     delayPressIn={70}
                     activeOpacity={0.8}
-                    style = {styles.container}
+                    style = {[styles.container, styles.root]}
                     onPress = {()=> this.setState({status: !this.state.status})}>
                   <RkCard rkType='horizontal-vide' style={styles.card}>
                       <View rkCardContent>
@@ -290,39 +266,81 @@ _renderItem(info) {
 
 
 render() {
-    const renderAddMotoForm = this.renderAddMotoForm();
-    if(this.state.dataList[0] == 'undefined')
-    {
-    return(
-    <ScrollView 
-      refreshControl={
-        <RefreshControl
-          refreshing={this.state.refreshing}
-          onRefresh={this._onRefresh.bind(this)}/>}>
-          {renderAddMotoForm}
-      </ScrollView>)
+        if(this.state.loading)
+        {
+            return( <View style = {styles.iconLoading}><ActivityIndicator  size="large"  /></View> )
+        }
+        else
+        {
+            const renderAddMotoForm = this.renderAddMotoForm();
+            if(this.state.dataList[0] == 'undefined')
+            {
+            return(
+            <ScrollView 
+            refreshControl={
+                <RefreshControl
+                refreshing={this.state.refreshing}
+                onRefresh={this._onRefresh.bind(this)}/>}
+                style = {styles.root}
+            >
+                {renderAddMotoForm}
+            </ScrollView>)
+            }
+            else
+            {
+                return (
+                <ScrollView 
+                refreshControl={
+                    <RefreshControl
+                    refreshing={false}
+                    onRefresh={this._onRefresh.bind(this)}/>}
+                    style = {styles.root}>
+                    <FlatList
+                    data={this.state.dataList}
+                    renderItem={this.renderItem}
+                    keyExtractor={this.keyExtractor}
+                    style={[styles.container, styles.root]}/>
+                    {renderAddMotoForm}
+                </ScrollView>
+            )
+            }
+        }
     }
-    else
-    {
-    return (
-      <ScrollView 
-      refreshControl={
-        <RefreshControl
-          refreshing={this.state.refreshing}
-          onRefresh={this._onRefresh.bind(this)}/>}>
-        <FlatList
-          data={this.state.dataList}
-          renderItem={this.renderItem}
-          keyExtractor={this._keyExtractor}
-          style={styles.container}/>
-          {renderAddMotoForm}
-      </ScrollView>
-    )
-}
-  }
 }
 
+
+class ImageMoto extends React.Component{
+    constructor(props){
+        super(props)
+    }
+
+    render() 
+    {
+        if(this.props.uri !== 'undefined'){
+            return(
+            <TouchableHighlight onPress={this.props.changeImage}>
+                <Image source={{ uri: this.props.uri}} style={{ width: 100, height: 100, borderRadius:0 }} />
+            </TouchableHighlight>
+            );
+        }
+        else{
+            const sourceImage = require('../img/addImage.png')
+            return(
+            <TouchableHighlight onPress={this.props.changeImage}>
+                <Image source={sourceImage} style={{ width: 100, height: 100, borderRadius:0 }} />
+            </TouchableHighlight>
+            );
+        }
+    }
+}
+
+
+
+
 let styles = RkStyleSheet.create(theme => ({
+    root: {
+        backgroundColor: theme.colors.screen.base
+    },
     container: {
       backgroundColor: theme.colors.screen.scroll,
       paddingVertical: 8,
@@ -333,5 +351,9 @@ let styles = RkStyleSheet.create(theme => ({
     },
     post: {
       marginTop: 13
-    }
+    },
+    iconLoading: {
+        flex: 1,
+        justifyContent: 'center'
+      },
   }));

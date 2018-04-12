@@ -1,6 +1,8 @@
 {
   "name": "projet-info",
-  "version": "0.1.0",
+  "slug": "MC Servicing",
+  "version": "1.0.0",
+  "orientation" : "portrait",
   "private": true,
   "devDependencies": {
     "jest-expo": "25.0.0",

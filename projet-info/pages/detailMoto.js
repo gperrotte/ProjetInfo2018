@@ -1,5 +1,5 @@
 import  React from 'react';
-import { Text, View, ProgressBar, ProgressViewIOS, TouchableOpacity, ScrollView, FlatList, RefreshControl } from 'react-native';
+import { Text, View, ProgressBar, ProgressViewIOS, TouchableOpacity, ScrollView, FlatList, RefreshControl, Image, Slider } from 'react-native';
 import {Button , FormInput, FormLabel, FormValidationMessage, Icon} from 'react-native-elements';
 import { Dimensions } from 'react-native';
 import * as Progress from 'react-native-progress';
@@ -14,8 +14,7 @@ import {
   import   {SocialBar} from '../components/socialBar'
   import { RkTextInput } from 'react-native-ui-kitten/src/components/textinput/rkTextInput';
   import TimerMixin from 'react-timer-mixin';
-
-
+  import {scale, scaleModerate, scaleVertical, scaleHonrizontal} from '../utils/scale';
 
   
 
@@ -28,18 +27,17 @@ export default class PageDetailMoto extends React.Component{
           statut: [],
           refreshing : false,
           loadingPage : true,
+          value : 0,
         }
         this.getRatioEntretien = this.getRatioEntretien.bind(this);
         this.getEntretien = this.getEntretien.bind(this);
         this.renderEntretien = this._renderEntretien.bind(this);
         this.remiseAZeroEntretien = this.remiseAZeroEntretien .bind(this);
-
-
     }
 
     componentWillMount()
     {
-      setTimeout(() => this.setState({loadingPage: false}), 2000)
+      setTimeout(() => this.setState({loadingPage: false}), 1500)
       this.getRatioEntretien()
       this.getEntretien()
     }
@@ -61,12 +59,12 @@ export default class PageDetailMoto extends React.Component{
 
     getEntretien =() => { 
         const { params } = this.props.navigation.state;
+        const userUid = firebase.auth().currentUser.uid
         const id = params ? params.id : null;
         let data = []
         let dataStatut = []
-        const entretienRef = firebase.database().ref().child('Motos').child(id).child('Entretiens')
+        const entretienRef = firebase.database().ref().child('users').child(userUid).child('Motos').child(id).child('Entretiens')
         this.setState({loading : true})
-
 
         entretienRef.on('child_added', snapshot => {
             data.push({
@@ -88,9 +86,11 @@ export default class PageDetailMoto extends React.Component{
     setNbKilometresAllMoto = (nbKilometres) => {
       const { params } = this.props.navigation.state;
       const id = params ? params.id : null; 
-      const motoRef = firebase.database().ref().child('Motos').child(id).child('Entretiens')
+      const userUid = firebase.auth().currentUser.uid
+
+      const entretienRef = firebase.database().ref().child('users').child(userUid).child('Motos').child(id).child('Entretiens')
       let postData = [];
-      motoRef.on('child_added', snapshot => {
+      entretienRef.on('child_added', snapshot => {
             postData.push({
                 'DateModif' : new Date().toDateString(),
                 'Name' : snapshot.val().Name,
@@ -98,13 +98,14 @@ export default class PageDetailMoto extends React.Component{
               })
           })
         let updates = {};
-        updates['Motos/' + id + '/Entretiens/'] = postData;
+        updates['users/' + userUid+ '/Motos/' + id + '/Entretiens/'] = postData;
         firebase.database().ref().update(updates)
         this._onRefresh()
         }
 
     remiseAZeroEntretien = (info) => {
       const entretienID = info.item.id;
+      const userUid = firebase.auth().currentUser.uid
       const { params } = this.props.navigation.state;
       const id = params ? params.id : null;      
       let postData = {
@@ -114,7 +115,7 @@ export default class PageDetailMoto extends React.Component{
       }
 
       let updates = {};
-      updates['Motos/' + id + '/Entretiens/' + entretienID] = postData;
+      updates['users/' + userUid+ '/Motos/' + id + '/Entretiens/' + entretienID] = postData;
       firebase.database().ref().update(updates)
   }
     _keyExtractor(post) {
@@ -145,7 +146,7 @@ export default class PageDetailMoto extends React.Component{
                         onPress = {() => {statutBis[id] = false; this.setState({statut : statutBis})}}>
                           <View  style = {[styles.section, {paddingTop : 20}]}>
                       <RkText rkType='header4 hintColor' style = {{paddingBottom: 5}}>{info.item.Name}</RkText>
-                      <Progress.Bar color = {color} 
+                      <Progress.Bar color = {color} borderColor = {'rgba(0,0,0,256)'}
                       progress={ dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 1 ? 
                       dataList[id].NbKilometres/dataEntretiens[id].NbKilometres : 1} width={200} height = {15} />
                   </View>
@@ -161,7 +162,7 @@ export default class PageDetailMoto extends React.Component{
                         onPress = {() => {statutBis[id] = true; this.setState({statut : statutBis})}}>
                     <View  style = {[styles.section, {paddingTop : 20}]}>
                       <RkText rkType='header4 hintColor' style = {{paddingBottom: 5}}>{info.item.Name}</RkText>
-                      <Progress.Bar color = {color}
+                      <Progress.Bar color = {color} borderColor = {'rgba(0,0,0,256)'}
                                   progress={dataList[id].NbKilometres/dataEntretiens[id].NbKilometres < 1 ? 
                                                 dataList[id].NbKilometres/dataEntretiens[id].NbKilometres : 1} width={200} height = {15} />
                       <View style = {{paddingTop : 10}}> 
@@ -169,7 +170,8 @@ export default class PageDetailMoto extends React.Component{
                         <RkText rkType = 'secondary1 hintColor'>Effectué(e) le {info.item.DateModif}</RkText>
                       </View>
                       <View style = {{paddingTop : 10}}> 
-                          <RkButton onPress= {() => {
+                          <RkButton rkType = 'outline'
+                          onPress= {() => {
                             this.remiseAZeroEntretien(info);
                             this._onRefresh()}}>Effectué(e)</RkButton>
                       </View>
@@ -186,6 +188,7 @@ export default class PageDetailMoto extends React.Component{
           const { params } = this.props.navigation.state;
           const marque = params ? params.marque : null;
           const modele = params ? params.modele : null;
+          const uriPhoto = params ? params.uri : null;
             return (
               <ScrollView style={styles.root}
               refreshControl={
@@ -194,19 +197,33 @@ export default class PageDetailMoto extends React.Component{
                   onRefresh={this._onRefresh.bind(this)}/>}>
                 <RkCard rkType='article'>
                   <View style={[styles.header, styles.bordered]}>
-                    {/*<Image rkCardImg source={this.data.photo}/>*/}
-                    <RkText rkType='header2'>{marque + ' ' + modele}</RkText>
+                    <Image rkCardImg source={{ uri: uriPhoto}} style={{ width: 150, height: 150, borderRadius: 75,  marginBottom : 20 }} />
+                    <RkText rkType='header2'>{marque}</RkText>
+                    <RkText rkType='secondary2 h3'>{modele}</RkText>
                   </View>
                   <View rkCardContent>
                   <FlatList
                     data={this.state.dataList}
                     renderItem={this.renderEntretien}
                     keyExtractor={this._keyExtractor}
-                    //style={styles.container}
                     />
+                    <View style = {{marginTop : 25}}>
+                      <Slider   value={this.state.value}
+                                onSlidingComplete={(value) => this.setState({value})} 
+                                maximumValue = {250} step = {5}/>
+                      <View style ={{flexDirection : 'row'}}>
+                        <View>
+                          <RkText>0</RkText>
+                        </View>
+                        <View style = {{marginLeft :'85%'}}>
+                          <RkText>250</RkText>
+                        </View>
+                      </View>
+                    </View>
                     <View style = {{flexDirection : 'row', paddingTop: 25, alignItems: 'center', justifyContent :'center'}}>
-                        <RkButton  style = {{width : 200, height : 50}}
-                        onPress = {() => this.setNbKilometresAllMoto(300)}> Mettre à jours les kilomètres</RkButton>
+                        <RkButton   rkType = 'rounded outline'
+                                    style = {{width : 200, height : 50}}
+                                    onPress = {() => this.setNbKilometresAllMoto(this.state.value)}> Ajouter {this.state.value.toString()} kilomètres</RkButton>
                     </View>
                   </View>
                   <View rkCardFooter>
@@ -224,6 +241,12 @@ export default class PageDetailMoto extends React.Component{
             }
 
 }
+
+RkTheme.setType('RkButton', 'kilometres', {
+  width: scaleHonrizontal(240),
+  hitSlop: {top: 5, left: 5, bottom: 5, right: 5},
+});
+
 
 let styles = RkStyleSheet.create(theme => ({
   root: {

@@ -15,6 +15,7 @@ import {
   RkAvoidKeyboard
 } from 'react-native-ui-kitten';
 import {scale, scaleModerate, scaleVertical, scaleHonrizontal} from '../utils/scale';
+import { NavigationActions } from 'react-navigation';
 import * as firebase from 'firebase';
 
 export default class Inscription extends React.Component {
@@ -29,7 +30,6 @@ static navigationOptions = {
         password :'',
         confirmPassword:'',
         error:'',
-        errorID:'',
         loading: false,
     }
     signUp = this.signUp.bind(this)
@@ -45,6 +45,17 @@ stringsAreEquals = (string, string2) => {
     else return true;
 }
 
+resetNavigation(targetRoute) {
+  const resetAction = NavigationActions.reset({
+    index: 0,
+    key: null,
+    actions: [
+      NavigationActions.navigate({ routeName: targetRoute }),
+    ],
+  });
+  this.props.navigation.dispatch(resetAction);
+}
+
 signUp = () => {
     this.setState({error: '', errorID: ''})
     if(!this.stringsAreEquals(this.state.password, this.state.confirmPassword))
@@ -58,73 +69,64 @@ signUp = () => {
     firebase.auth()
     .createUserWithEmailAndPassword(id, password)
     .then(() => { this.setState({ error: '', loading: false });
-                Alert.alert("Inscription réussie !");
-                this.props.navigation.goBack();
-
+                //Alert.alert("Inscription réussie !");
+                //this.props.navigation.goBack();
+                firebase.auth().signInWithEmailAndPassword(id, password),
+                this.resetNavigation('UserLogged')
     })
     .catch((error) => {
         const errorCode = error.code;
         let errorMessage = error.message;
         if (errorCode == 'auth/invalid-email') {
             errorMessage = "Saisie d'email invalide !"
-            this.setState({errorID: errorMessage})
+            this.setState({error: errorMessage})
         } 
         else if (errorCode == 'auth/email-already-in-use'){
             errorMessage = "Cet utilisateur existe déjà"
-            this.setState({errorID: errorMessage})
+            this.setState({error: errorMessage})
         }
         else if(errorCode == 'auth/weak-password'){
             errorMessage = "La sécurité de votre mot de passe est trop faible"
             this.setState({error : errorMessage})
-        }
-        else{
-            errorMessage = "L'inscription a échoué"
-            this.setState({error: errorMessage})
         }
         this.setState({loading : false})
     })
 }
 
   render() {
-    /*let renderIcon = () => {
-      if (RkTheme.current.name === 'light')
-        return <Image style={styles.image} source={require('../../assets/images/logo.png')}/>;
-      return <Image style={styles.image} source={require('../../assets/images/logoDark.png')}/>
-    };*/
     return (
       <KeyboardAwareScrollView     
       onStartShouldSetResponder={ (e) => true}
       //onResponderRelease={ (e) => Keyboard.dismiss()}
       behavior={"padding"}
       contentContainerStyle={styles.screen}>
-        <View style={{alignItems: 'center'}}>
+        <View style={{alignItems: 'center', marginTop: scaleVertical(75)}}>
           {/*renderIcon()*/}
-          <RkText rkType='h1'>Registration</RkText>
+          <RkText rkType='h1'>Inscription</RkText>
         </View>
         <View style={styles.content}>
           <View>
             <RkTextInput rkType='rounded' placeholder='Email'
+                          keyboardType = 'email-address'
                          onChangeText = {(text) => this.setState({id : text.toLowerCase()})}
                          returnKeyType = {"next"}
-                         onSubmitEditing={(event) => { 
-                         this.refs.SecondInput.focus(); 
-                        }}/>
+                         />
 
-            <RkTextInput rkType='rounded' placeholder='Password' secureTextEntry={true}
+            <RkTextInput rkType='rounded' placeholder='Mot de passe' secureTextEntry={true}
                          onChangeText = {(text) => this.setState({password : text})}
                          returnKeyType = {"next"}
                          ref='SecondInput'
-                         onSubmitEditing={(event) => { 
-                            this.refs.ThirdInput.focus(); 
-                          }}/>
-            <RkTextInput rkType='rounded' placeholder='Confirm Password' secureTextEntry={true}
+                        />
+            <RkTextInput rkType='rounded' placeholder='Confirmer mot de passe' secureTextEntry={true}
                          onChangeText = {(text) => this.setState({confirmPassword : text})}
                          returnKeyType = {"done"}
-                         ref='ThirdInput'
-                         onSubmitEditing = {signUp}
                          />
-            <RkText>{this.state.error}</RkText>
-            <RkButton style={styles.save} rkType='rounded inscription'>Inscription</RkButton>
+            <View style = {{alignItems:'center'}}>
+              <RkText rkType='light h4 danger'>{this.state.error}</RkText>
+            </View>            
+            <RkButton style={styles.save} 
+                      rkType='rounded inscription'
+                      onPress={this.signUp}>Inscription</RkButton>
             </View>
           <View style={styles.footer}>
             <View style={styles.textRow}>
@@ -153,7 +155,7 @@ let styles = RkStyleSheet.create(theme => ({
     resizeMode:'contain'
   },
   content: {
-    paddingTop : 0,
+    marginTop: scaleVertical(70),
     justifyContent: 'space-between'
   },
   save: {

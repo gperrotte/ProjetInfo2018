@@ -27,10 +27,9 @@ export default class Connexion extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      id :'Gperrotte@ensc.fr',
-      password:'Bonay-94',
+      id :'',
+      password:'',
       error :'',
-      errorID:'',
       loading : false,
       };
     login = this.login.bind(this)
@@ -42,6 +41,7 @@ export default class Connexion extends React.Component {
  resetNavigation(targetRoute) {
   const resetAction = NavigationActions.reset({
     index: 0,
+    key: null,
     actions: [
       NavigationActions.navigate({ routeName: targetRoute }),
     ],
@@ -56,7 +56,7 @@ export default class Connexion extends React.Component {
     firebase.auth()
     .signInWithEmailAndPassword(id, password)
     .then(() => { this.setState({ error: '', loading: false });
-                this.resetNavigation('Main');})
+                this.resetNavigation('UserLogged');})
     
      //Affiche le type d'erreur 
     .catch((error) => {
@@ -64,11 +64,11 @@ export default class Connexion extends React.Component {
         let errorMessage = error.message;
         if (errorCode == 'auth/invalid-email') {
             errorMessage = "Saisie d'email invalide !"
-            this.setState({errorID: errorMessage})
+            this.setState({error: errorMessage})
         } 
         else if (errorCode == 'auth/user-not-found'){
             errorMessage = "Cet utilisateur n'existe pas"
-            this.setState({errorID: errorMessage})
+            this.setState({error: errorMessage})
         }
         else if(errorCode == 'auth/wrong-password'){
             errorMessage = "Mot de passe incorrect"
@@ -79,15 +79,11 @@ export default class Connexion extends React.Component {
             this.setState({error: errorMessage})
         }
         this.setState({loading : false})
+        this.setState({error: errorMessage})
     });
   }
 
   render() {
-    /*let renderIcon = () => {
-      if (RkTheme.current.name === 'light')
-        return <Image style={styles.image} source={require('../../assets/images/logo.png')}/>;
-      return <Image style={styles.image} source={require('../../assets/images/logoDark.png')}/>
-    };*/
 
     return (
       <KeyboardAwareScrollView
@@ -98,13 +94,16 @@ export default class Connexion extends React.Component {
         >
         <View style={styles.header}>
           {/*renderIcon()*/}
-          <RkText rkType='light h1'>Carnet Moto</RkText>
-          <RkText rkType='logo h0'>Gaetan</RkText>
+          <RkText rkType='logo h0'>MC Servicing</RkText>
+          <RkText rkType='light h3'>Carnet d'entretien numérique</RkText>
         </View>
         <View style={styles.content}>
           <View>
-            <RkTextInput rkType='rounded' placeholder='Username'/>
-            <RkTextInput rkType='rounded' placeholder='Password' secureTextEntry={true}/>
+            <RkTextInput rkType='rounded' keyboardType = 'email-address' placeholder='Identifiant' onChangeText={(text) => this.setState({id : text})}/>
+            <RkTextInput rkType='rounded' placeholder='Mot de passe' onChangeText={(text) => this.setState({password : text})} secureTextEntry={true}/>
+            <View style = {{alignItems:'center'}}>
+              <RkText rkType='light h4 danger'>{this.state.error}</RkText>
+            </View>
             <RkButton style={styles.save} onPress = {login} rkType='rounded connexion'
                       loading = {this.state.loading}
                       loadingRight>Connexion</RkButton>
@@ -138,7 +137,7 @@ let styles = RkStyleSheet.create(theme => ({
     paddingBottom: scaleVertical(10),
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1
+    flex: 0.8
   },
   content: {
     justifyContent: 'space-between'

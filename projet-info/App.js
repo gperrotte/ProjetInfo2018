@@ -1,18 +1,24 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button, ActivityIndicator } from 'react-native';
+import { Icon } from 'react-native-elements';
 import Connexion from './pages/connexion'
 import Inscription from './pages/inscription'
 import { StackNavigator } from 'react-navigation';
 import * as firebase from 'firebase';
 import {config} from './firebase/constants';
-import Main from './pages/main';
+//import Main from './pages/main';
+import {TabNavUserLogged, TabNavUserNotLogged} from './pages/main'
 import {bootstrap} from './config/bootstrap'
 import {Font} from 'expo';
+import TimerMixin from 'react-timer-mixin';
 
 
 bootstrap();
-const RootStackUserLogged = StackNavigator(
+
+
+/*const RootStackUserLogged = StackNavigator(
   {
+    
     Connexion: {
       screen: Connexion,
     },
@@ -32,8 +38,9 @@ const RootStackUserLogged = StackNavigator(
 
 const RootStackUserNotLogged = StackNavigator(
   {
+    
     Connexion: {
-      screen: Connexion
+      screen: Connexion,
     },
 
     Inscription: {
@@ -47,33 +54,76 @@ const RootStackUserNotLogged = StackNavigator(
   {
     initialRouteName: 'Connexion',
   }
-);
+);*/
+
+const RootStackUserNotLogged = StackNavigator({
+  
+  UserLogged: {
+      screen: TabNavUserLogged,
+      navigationOptions:  
+          {
+              headerLeft: null
+          }
+      },
+  UserNotLogged : {
+      screen: TabNavUserNotLogged,
+      }
+  },
+  {
+    initialRouteName: 'UserNotLogged',
+  }
+); 
+
+const RootStackUserLogged = StackNavigator({
+  UserLogged: {
+      screen: TabNavUserLogged,
+      navigationOptions:  
+          {
+              headerLeft: null
+          }
+      },
+  UserNotLogged : {
+      screen: TabNavUserNotLogged,
+      }
+  },
+  {
+    initialRouteName: 'UserLogged',
+  }
+); 
 
 export default class App extends React.Component {
   constructor(props){
     super(props)
     this.state = {
       user : null,
-      loading : false
+      loading : false,
+      initialRouteName : 'Connexion'
     }
+  
+    console.disableYellowBox = true;
+
+   this.loadAssets = this._loadAssets.bind(this)
   }
 
+
   componentWillMount(){
+    this.loadAssets()
     this.setState({loading: true})
-    this._loadAssets();
     firebase.initializeApp(config);
     firebase.auth()
     .onAuthStateChanged((user) => {
       if(user){
         this.setState({
           user : user,
-          loading : false,
+          initialRouteName : 'Main'
         })
       }
       else{
-        this.setState({loading : false})
+        this.setState({ initialRouteName : 'Connexion'})
       }
+      this.setState({loading: false})
     });
+
   }
 
 
@@ -92,16 +142,25 @@ export default class App extends React.Component {
   render() {
     if(this.state.loading)
     {
-      //TODO : montrer un icone loading qui tourne 
-      return <Text> loading </Text>
+    return( <View style = {styles.container}><ActivityIndicator  size="large"/></View> )
     }
-    else if(this.state.user){
+    else if (this.state.user)
+    {
       return <RootStackUserLogged/>
     }
-    else{
+    else 
+    {
       return <RootStackUserNotLogged/>
+
     }
   }
 }
 
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center'
+  },
+})
 
