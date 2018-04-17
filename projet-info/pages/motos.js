@@ -88,17 +88,27 @@ export default class PageMoto extends React.Component{
             DateAjout : new Date().toDateString(),
             Entretiens: {
                 0 : {
-                    Name : "Vidange",
+                    Name : "Graissage chaine",
                     NbKilometres : 0,
                     DateModif : new Date().toDateString(),
                 },
                 1 : {
-                    Name : "Pression", 
+                    Name : "Tension chaine", 
                     NbKilometres : 0,
                     DateModif : new Date().toDateString(),
                 },
                 2 : {
-                    Name : "Graissage chaine", 
+                    Name : "Nettoyage chaine", 
+                    NbKilometres : 0,
+                    DateModif : new Date().toDateString(),
+                },
+                3 : {
+                    Name : "Pression pneus", 
+                    NbKilometres : 0,
+                    DateModif : new Date().toDateString(),
+                },
+                4 : {
+                    Name : "Entretien annuel", 
                     NbKilometres : 0,
                     DateModif : new Date().toDateString(),
                 },
@@ -178,7 +188,9 @@ _renderItem(info) {
                 <View rkCardContent>
                             <RkText numberOfLines={1} rkType='header6'>{info.item.Marque}</RkText>
                             <RkText rkType='secondary1 hintColor'>{info.item.Modele}</RkText>
-                            <RkText style={styles.post} numberOfLines={2} rkType='secondary1'>Ajouté le {info.item.DateAjout}</RkText>
+                            <RkText style={styles.post} 
+                                    numberOfLines={1} 
+                                    rkType='secondary1'>Ajouté le {info.item.DateAjout}</RkText>
                 </View>
                 <View rkCardFooter>
                     <SocialBar rkType='space' showLabel={true}/>
@@ -350,7 +362,7 @@ let styles = RkStyleSheet.create(theme => ({
       marginVertical: 8,
     },
     post: {
-      marginTop: 13
+      marginTop: 13, width : 230
     },
     iconLoading: {
         flex: 1,

@@ -150,10 +150,9 @@ export default class PageGPS extends React.Component{
         }
     
     _renderItem(info) {
-        const imgSource = require('../img/addImage.png')
         let dataCheckedBis =this.state.dataChecked
         return (
-            <CheckBox title={info.item.Marque}
+            <CheckBox title={info.item.Marque + ' ' + info.item.Modele}
                         size = {30}
                         checkedColor='#1565c0'
                         checked = {this.state.dataChecked[info.item.Numero]}

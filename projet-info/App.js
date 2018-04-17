@@ -14,48 +14,6 @@ import TimerMixin from 'react-timer-mixin';
 
 
 bootstrap();
-
-
-/*const RootStackUserLogged = StackNavigator(
-  {
-    
-    Connexion: {
-      screen: Connexion,
-    },
-
-    Inscription: {
-      screen: Inscription
-    },
-
-    Main : {
-      screen : Main
-    }
-  },
-  {
-    initialRouteName: 'Main',
-  }
-);
-
-const RootStackUserNotLogged = StackNavigator(
-  {
-    
-    Connexion: {
-      screen: Connexion,
-    },
-
-    Inscription: {
-      screen: Inscription
-    },
-
-    Main : {
-      screen : Main
-    }
-  },
-  {
-    initialRouteName: 'Connexion',
-  }
-);*/
-
 const RootStackUserNotLogged = StackNavigator({
   
   UserLogged: {

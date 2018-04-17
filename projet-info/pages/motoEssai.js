@@ -124,7 +124,7 @@ renderAddMotoForm = () => {
                         <View rkCardContent>
                                     <RkText numberOfLines={1} rkType='header6'>{data[0].Marque}</RkText>
                                     <RkText rkType='secondary1 hintColor'>{data[0].Modele}</RkText>
-                                    <RkText style={styles.post} numberOfLines={2} rkType='secondary1'>Ajouté le {data[0].Date}</RkText>
+                                    <RkText style={styles.post} numberOfLines={1} rkType='secondary1'>Ajouté le {data[0].Date}</RkText>
                         </View>
                         <View rkCardFooter>
                             <SocialBar rkType='space' showLabel={true}/>

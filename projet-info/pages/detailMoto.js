@@ -1,5 +1,5 @@
 import  React from 'react';
-import { Text, View, ProgressBar, ProgressViewIOS, TouchableOpacity, ScrollView, FlatList, RefreshControl, Image, Slider } from 'react-native';
+import { Text, View, ProgressBar, ProgressViewIOS, TouchableOpacity, ScrollView, FlatList, RefreshControl, Image, Slider,Alert } from 'react-native';
 import {Button , FormInput, FormLabel, FormValidationMessage, Icon} from 'react-native-elements';
 import { Dimensions } from 'react-native';
 import * as Progress from 'react-native-progress';
@@ -11,11 +11,11 @@ import {
     RkTheme,
     RkButton,
   } from 'react-native-ui-kitten';
-  import   {SocialBar} from '../components/socialBar'
-  import { RkTextInput } from 'react-native-ui-kitten/src/components/textinput/rkTextInput';
-  import TimerMixin from 'react-timer-mixin';
-  import {scale, scaleModerate, scaleVertical, scaleHonrizontal} from '../utils/scale';
-
+import   {SocialBar} from '../components/socialBar'
+import { RkTextInput } from 'react-native-ui-kitten/src/components/textinput/rkTextInput';
+import TimerMixin from 'react-timer-mixin';
+import {scale, scaleModerate, scaleVertical, scaleHonrizontal} from '../utils/scale';
+import {NavigationActions} from 'react-navigation';
   
 
 export default class PageDetailMoto extends React.Component{
@@ -92,7 +92,7 @@ export default class PageDetailMoto extends React.Component{
       let postData = [];
       entretienRef.on('child_added', snapshot => {
             postData.push({
-                'DateModif' : new Date().toDateString(),
+                'DateModif' : snapshot.val().DateModif,
                 'Name' : snapshot.val().Name,
                 'NbKilometres' : snapshot.val().NbKilometres + nbKilometres,
               })
@@ -181,8 +181,25 @@ export default class PageDetailMoto extends React.Component{
           }
         }
       }
-        
-
+    resetNavigation(targetRoute) {
+      const resetAction = NavigationActions.reset({
+        index: 0,
+        actions: [
+          NavigationActions.navigate({ routeName: targetRoute }),
+        ],
+      });
+      this.props.navigation.dispatch(resetAction);
+    }
+          
+    removeMoto = () => {
+      const user = firebase.auth().currentUser
+      const userUid = user.uid;
+      const { params } = this.props.navigation.state;
+      const id = params ? params.id : null; 
+      const ref = firebase.database().ref().child('users').child(userUid).child('Motos')
+      ref.child(id).remove();
+      this.resetNavigation('Motos')
+  }      
 
         render() {
           const { params } = this.props.navigation.state;
@@ -224,6 +241,18 @@ export default class PageDetailMoto extends React.Component{
                         <RkButton   rkType = 'rounded outline'
                                     style = {{width : 200, height : 50}}
                                     onPress = {() => this.setNbKilometresAllMoto(this.state.value)}> Ajouter {this.state.value.toString()} kilomètres</RkButton>
+                    </View>
+                    <View style = {{paddingTop: 25, alignItems: 'center', justifyContent :'center'}}>
+                    <RkButton  rkType = 'rounded'
+                                    style = {styles.buttonRemove}
+                                    onPress = {() =>  Alert.alert(
+                                      'Supprimer le véhicule',
+                                      '',
+                                      [
+                                        {text: 'Non, ne pas supprimer', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                                        {text: 'Oui', onPress: () => this.removeMoto()},
+                                      ]
+                                    )}>Supprimer</RkButton>
                     </View>
                   </View>
                   <View rkCardFooter>
@@ -290,6 +319,11 @@ let styles = RkStyleSheet.create(theme => ({
   button: {
     flex: 1,
     alignSelf: 'center'
+  },
+  buttonRemove : {
+    backgroundColor : theme.colors.primary,
+    width : 200, 
+    height : 50
   }
 }));
 
