@@ -11,8 +11,10 @@ import { Text,
     Image,
     RefreshControl,
     Alert,
-    ActivityIndicator
+    ActivityIndicator,
+    Platform,
 } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
 import {Button , FormInput, FormLabel, FormValidationMessage, Icon} from 'react-native-elements';
 import {
     RkText,
@@ -45,28 +47,37 @@ export default class PageMotoEssai extends React.Component{
             status: false,
         }
     }
+
+    alertConnexion = () => {
+        Alert.alert(
+            '',
+            'Connectez-vous ou inscrivez-vous pour pouvoir utiliser les fonctionnalités de l\'application',
+            [
+              {text: 'Ok', onPress: () => console.log('Cancel Pressed')},
+            ]
+          )
+    }
 renderAddMotoForm = () => {
     if(this.state.status)
     {
     return(
-        <TouchableOpacity
-                delayPressIn={70}
-                activeOpacity={0.8}
-                style = {[styles.container, styles.root]}
-                onPress = {()=> this.setState({status: !this.state.status})}>
-              <RkCard rkType='horizontal-ajout' style={styles.card}>
-                  <View rkCardContent>
-                      <RkText numberOfLines={1} rkType='header6' style = {{textAlign: 'center'}}>Ajoutez une moto</RkText>
-                      
-                      <RkTextInput rkType ='basic' label='Marque'
-                      color = 'gray'
-                      onChangeText = {(text) => this.setState({marque: text})}/>
-                      <RkTextInput rkType ='basic' label='Modele'
-                      onChangeText = {(text) => this.setState({modele: text})}/>
-                      <RkButton rkType = 'rounded save'>Sauvegarder</RkButton>
-                  </View>
-            </RkCard>
-          </TouchableOpacity>
+            <TouchableOpacity
+                    delayPressIn={70}
+                    activeOpacity={0.8}
+                    style = {[styles.container, styles.root]}
+                    onPress = {()=> this.setState({status: !this.state.status})}>
+                <RkCard rkType='horizontal-ajout' style={styles.card}>
+                    <View rkCardContent>
+                        <RkText numberOfLines={1} rkType='header6' style = {{textAlign: 'center'}}>Ajoutez une moto</RkText>                  
+                        <RkTextInput rkType ='basic' label='Marque'
+                        color = 'gray'
+                        onChangeText = {(text) => this.setState({marque: text})}/>
+                        <RkTextInput rkType ='basic' label='Modele'
+                        onChangeText = {(text) => this.setState({modele: text})}/>
+                        <RkButton rkType = 'rounded save' onPress = {() => this.alertConnexion()}>Sauvegarder</RkButton>
+                    </View>
+                </RkCard>
+            </TouchableOpacity>
 
     )}
     else {
@@ -110,7 +121,10 @@ renderAddMotoForm = () => {
 
         return (
             
-            <ScrollView  style = {styles.root}>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                enableAutoAutomaticScroll={(Platform.OS === 'ios')}
+                style = {styles.root}>
                 <Swipeout right = {swipeBtns}
                 style={styles.card}
                 autoClose = {true}
@@ -118,6 +132,7 @@ renderAddMotoForm = () => {
                     <TouchableOpacity
                     delayPressIn={70}
                     activeOpacity={0.8}
+                    onPress = {() => this.alertConnexion()}
                     style={[styles.container, styles.root]}>
                     <RkCard rkType='horizontal' >
                     <ImageMoto/>
@@ -138,7 +153,7 @@ renderAddMotoForm = () => {
                         Connectez-vous grâce à l'onglet profile si vous souhaitez utiliser les fonctionnalités de l'application.
                     </RkText>
                 </View>
-            </ScrollView>
+                </KeyboardAwareScrollView>
         )
     }
 }
@@ -173,7 +188,7 @@ let styles = RkStyleSheet.create(theme => ({
       marginVertical: 8,
     },
     post: {
-      marginTop: 13
+      marginTop: 13, width : 230
     },
     iconLoading: {
         flex: 1,

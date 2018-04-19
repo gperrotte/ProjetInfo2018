@@ -4,6 +4,8 @@ import {
   Image,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
+  ScrollView
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
 import {
@@ -95,11 +97,13 @@ signUp = () => {
 
   render() {
     return (
-      <KeyboardAwareScrollView     
-      onStartShouldSetResponder={ (e) => true}
-      //onResponderRelease={ (e) => Keyboard.dismiss()}
-      behavior={"padding"}
-      contentContainerStyle={styles.screen}>
+      <KeyboardAwareScrollView
+          enableOnAndroid={true}
+          enableAutoAutomaticScroll={(Platform.OS === 'ios')}  
+          onStartShouldSetResponder={ (e) => true}
+          //onResponderRelease={ (e) => Keyboard.dismiss()}
+          behavior={"padding"}
+          contentContainerStyle={styles.screen}>
         <View style={{alignItems: 'center', marginTop: scaleVertical(75)}}>
           {/*renderIcon()*/}
           <RkText rkType='h1'>Inscription</RkText>

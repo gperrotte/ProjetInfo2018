@@ -11,7 +11,8 @@ import { Text,
     Image,
     RefreshControl,
     Alert,
-    ActivityIndicator
+    ActivityIndicator,
+    Platform
 } from 'react-native';
 import {Button , FormInput, FormLabel, FormValidationMessage, Icon} from 'react-native-elements';
 import {
@@ -22,6 +23,7 @@ import {
     RkButton,
     RkTextInput
   } from 'react-native-ui-kitten';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {ImagePicker} from 'expo';
 import Swipeout from 'react-native-swipeout';
 import * as firebase from 'firebase';
@@ -170,6 +172,9 @@ _renderItem(info) {
           )
       }];
     return (
+        <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                enableAutoAutomaticScroll={(Platform.OS === 'ios')}>
         <Swipeout right = {swipeBtns}
          style={styles.card}
          autoClose = {true}
@@ -198,6 +203,7 @@ _renderItem(info) {
           </RkCard>
         </TouchableOpacity>
         </Swipeout>
+        </KeyboardAwareScrollView>
       )
     }
 
@@ -237,25 +243,27 @@ _renderItem(info) {
         if(this.state.status)
         {
         return(
-            <TouchableOpacity
-                    delayPressIn={70}
-                    activeOpacity={0.8}
-                    style = {[styles.container, styles.root]}
-                    onPress = {()=> this.setState({status: !this.state.status})}>
-                  <RkCard rkType='horizontal-ajout' style={styles.card}>
-                      <View rkCardContent>
-                          <RkText numberOfLines={1} rkType='header6' style = {{textAlign: 'center'}}>Ajoutez une moto</RkText>
-                          
-                          <RkTextInput rkType ='basic' label='Marque'
-                          color = 'gray'
-                          onChangeText = {(text) => this.setState({marque: text})}/>
-                          <RkTextInput rkType ='basic' label='Modele'
-                          onChangeText = {(text) => this.setState({modele: text})}/>
-                          <RkButton rkType = 'rounded save' onPress = {() => {this.addMoto(this.state.marque, this.state.modele);
-                             this.setState({marque:  '', modele: ''}) }}>Sauvegarder</RkButton>
-                      </View>
-                </RkCard>
-              </TouchableOpacity>
+            <KeyboardAwareScrollView>
+                <TouchableOpacity
+                        delayPressIn={70}
+                        activeOpacity={0.8}
+                        style = {[styles.container, styles.root]}
+                        onPress = {()=> this.setState({status: !this.state.status})}>
+                    <RkCard rkType='horizontal-ajout' style={styles.card}>
+                        <View rkCardContent>
+                            <RkText numberOfLines={1} rkType='header6' style = {{textAlign: 'center'}}>Ajoutez une moto</RkText>
+                            
+                            <RkTextInput rkType ='basic' label='Marque'
+                            color = 'gray'
+                            onChangeText = {(text) => this.setState({marque: text})}/>
+                            <RkTextInput rkType ='basic' label='Modele'
+                            onChangeText = {(text) => this.setState({modele: text})}/>
+                            <RkButton rkType = 'rounded save' onPress = {() => {this.addMoto(this.state.marque, this.state.modele);
+                                this.setState({marque:  '', modele: ''}) }}>Sauvegarder</RkButton>
+                        </View>
+                    </RkCard>
+                </TouchableOpacity>
+            </KeyboardAwareScrollView>
 
         )}
         else {

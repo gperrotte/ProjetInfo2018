@@ -3,7 +3,9 @@ import {
   View,
   Image,
   Keyboard,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
 } from 'react-native';
 import {
   RkButton,
@@ -87,6 +89,8 @@ export default class Connexion extends React.Component {
 
     return (
       <KeyboardAwareScrollView
+        enableOnAndroid={true}
+        enableAutoAutomaticScroll={(Platform.OS === 'ios')}
         contentContainerStyle={styles.screen}
         onStartShouldSetResponder={ (e) => true}
         behavior = {"padding"}
