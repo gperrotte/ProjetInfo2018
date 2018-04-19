@@ -93,6 +93,7 @@ export default class PageGPS extends React.Component{
         
 
     getMoto = () => {
+        this.setState({dataList : []})
         let data = [];
         let dataBis = [];
         let numberOfMoto = this.state;
@@ -179,6 +180,17 @@ export default class PageGPS extends React.Component{
     }
 
     render() {
+        if(this.state.dataList[0] == null)
+            {
+            return(
+            <View> 
+                <RkText style = {styles.infoText} rkType = 'hintColor header3'>
+                   Ajoutez une moto pour pouvoir utiliser cette fonctionnalité dans l'onglet "Mes motos"
+                </RkText>
+            </View>
+            )
+            }
+            else{
         return (
             <ScrollView style = {styles.root}>
                 <View>
@@ -202,6 +214,7 @@ export default class PageGPS extends React.Component{
                 </View>
             </ScrollView>
         )
+    }
     }
     
 }
@@ -272,7 +285,13 @@ let styles = RkStyleSheet.create(theme => ({
       },
       post: {
         marginTop: 13
-      }
+      },
+      infoText : {
+        textAlign:'center', 
+        marginTop : scaleVertical(20), 
+        marginLeft : scaleHonrizontal(20),
+        marginRight : scaleHonrizontal(20)
+    }
   }));
 
 RkTheme.setType('RkButton', 'GPSButtonInactif', {

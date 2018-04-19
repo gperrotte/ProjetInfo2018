@@ -1,8 +1,9 @@
 {
   "name": "projet-info",
   "slug": "MC Servicing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "orientation" : "portrait",
+  "description": "Application permettant de gérer les entretiens de son deux-roues. Grâce à cette application vous pourrez ajouter plusieurs véhicules et les gérer de manières différentes. \n Cette application a été développée à l'aide de React Native UI Kitten",
   "private": true,
   "devDependencies": {
     "jest-expo": "25.0.0",

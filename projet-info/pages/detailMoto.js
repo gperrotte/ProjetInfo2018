@@ -252,7 +252,7 @@ export default class PageDetailMoto extends React.Component{
                                         {text: 'Non, ne pas supprimer', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
                                         {text: 'Oui', onPress: () => this.removeMoto()},
                                       ]
-                                    )}>Supprimer</RkButton>
+                                    )}>Supprimer le véhicule</RkButton>
                     </View>
                   </View>
                   <View rkCardFooter>
