@@ -53,7 +53,7 @@ export default class PageMotoEssai extends React.Component{
             '',
             'Connectez-vous ou inscrivez-vous pour pouvoir utiliser les fonctionnalités de l\'application',
             [
-              {text: 'Ok', onPress: () => this.props.navigation.navigate("Profile")},
+              {text: 'Ok', onPress: () => this.props.navigation.navigate("Profil")},
               {text: 'Non, merci', style : 'cancel'},
             ]
           )

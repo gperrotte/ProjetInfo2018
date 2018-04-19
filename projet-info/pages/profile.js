@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert
 } from 'react-native';
+
 import {
   RkText,
   RkTextInput,
@@ -20,7 +21,7 @@ import {KittenTheme} from '../config/theme'
 
 export default class PageProfile extends React.Component {
   static navigationOptions = {
-    title: 'Profile'
+    title: 'Profil'
   };
 
   constructor(props) {
@@ -135,7 +136,6 @@ export default class PageProfile extends React.Component {
                             onPress = {this.signOut.bind(this)}> Se déconnecter </RkButton>
             </View>
           </View>
-
           </View>
         </RkAvoidKeyboard>
       </ScrollView>

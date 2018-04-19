@@ -65,7 +65,7 @@ export const TabNavUserLogged =  TabNavigator({
             tabBarOnPress: () => navigation.navigate("GPS", { date: new Date() })
             })
         },        
-    Profile : {
+    Profil : {
         screen : PageProfile,
         navigationOptions: {
             headerLeft : null,
@@ -84,7 +84,7 @@ export const TabNavUserLogged =  TabNavigator({
         } else if (routeName === 'GPS'){
             iconName = 'location';
             iconType = 'entypo';
-        } else if (routeName === 'Profile') {
+        } else if (routeName === 'Profil') {
           iconName = 'user';
           iconType = 'font-awesome';
         } 
@@ -117,7 +117,7 @@ export const TabNavUserNotLogged =  TabNavigator({
             tabBarOnPress: () => navigation.navigate("GPS", { date: new Date() })
             })
         },        
-    Profile : {
+    Profil : {
         screen : profileNavigator,
         navigationOptions: {
             headerLeft : null,
@@ -136,7 +136,7 @@ export const TabNavUserNotLogged =  TabNavigator({
         } else if (routeName === 'GPS'){
             iconName = 'location';
             iconType = 'entypo';
-        } else if (routeName === 'Profile') {
+        } else if (routeName === 'Profil') {
           iconName = 'user';
           iconType = 'font-awesome';
         } 
